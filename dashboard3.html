@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Projektový přehled</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #0078d4;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .calendar, .charts {
+      background: #fff;
+      padding: 20px;
+      margin-top: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .calendar-grid div {
+      padding: 10px;
+      background-color: #e6f0fa;
+      text-align: center;
+      border-radius: 5px;
+    }
+
+    .calendar-grid .day-name {
+      font-weight: bold;
+      background-color: #0078d4;
+      color: white;
+    }
+
+    canvas {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Projektový přehled</h1>
+
+    <div class="calendar">
+      <div class="calendar-header">
+        <button onclick="changeMonth(-1)">&#8592; Předchozí</button>
+        <h2 id="monthYear"></h2>
+        <button onclick="changeMonth(1)">Další &#8594;</button>
+      </div>
+      <div class="calendar-grid" id="calendarDays"></div>
+    </div>
+
+    <div class="charts">
+      <h2>Počet úkolů podle týmu</h2>
+      <canvas id="barChart" height="200"></canvas>
+
+      <h2>Stavy projektů</h2>
+      <canvas id="pieChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    // 🗓 Kalendář
+    const calendarDays = document.getElementById('calendarDays');
+    const monthYear = document.getElementById('monthYear');
+    const dayNames = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+    let currentDate = new Date();
+
+    function renderCalendar(date) {
+      calendarDays.innerHTML = '';
+      monthYear.textContent = date.toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' });
+
+      dayNames.forEach(day => {
+        const dayEl = document.createElement('div');
+        dayEl.classList.add('day-name');
+        dayEl.textContent = day;
+        calendarDays.appendChild(dayEl);
+      });
+
+      const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+      const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+
+      let startOffset = (firstDay + 6) % 7; // začínáme od pondělí
+
+      for (let i = 0; i < startOffset; i++) {
+        const empty = document.createElement('div');
+        calendarDays.appendChild(empty);
+      }
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const day = document.createElement('div');
+        day.textContent = i;
+        calendarDays.appendChild(day);
+      }
+    }
+
+    function changeMonth(offset) {
+      currentDate.setMonth(currentDate.getMonth() + offset);
+      renderCalendar(currentDate);
+    }
+
+    renderCalendar(currentDate);
+
+    // 📊 Chart.js – Sloupcový graf
+    const ctxBar = document.getElementById('barChart').getContext('2d');
+    new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels: ['Vývoj', 'Marketing', 'Podpora', 'Management'],
+        datasets: [{
+          label: 'Počet úkolů',
+          data: [12, 9, 5, 8],
+          backgroundColor: ['#0078d4', '#00b294', '#ffb900', '#e3008c']
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // 🍰 Chart.js – Koláčový graf
+    const ctxPie = document.getElementById('pieChart').getContext('2d');
+    new Chart(ctxPie, {
+      type: 'pie',
+      data: {
+        labels: ['Dokončeno', 'Probíhá', 'Zpoždění'],
+        datasets: [{
+          data: [40, 30, 10],
+          backgroundColor: ['#00b294', '#ffb900', '#e30000']
+        }]
+      },
+      options: {
+        responsive: true
+      }
+    });
+  </script>
+</body>
+</html>
